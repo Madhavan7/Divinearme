@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from Divinearme.search.models.temples import temple
+from Divinearme.search.models.temple import temple
 
 
 class membership(models.Model):
