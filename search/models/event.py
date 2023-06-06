@@ -8,8 +8,9 @@ class event(models.Model):
     religious_establishment = models.ForeignKey(temple, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     date = models.DateField()
-    invited_users = models.ManyToManyField(User, through='invitation')
-    requests_to_join = models.ManyToManyField(User, through='invitation')
+    invited_users = models.ManyToManyField(User, through='event_invitation')
+    requests_to_join = models.ManyToManyField(User, through='event_invitation')
+    event_members = models.ManyToManyField(User)
     event_location = models.ManyToOneRel(location)
     # Additional fields for the event
 

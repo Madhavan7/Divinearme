@@ -6,7 +6,6 @@ from Divinearme.search.models.event import event
 
 class invitation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    associated_event = models.ForeignKey(event, on_delete=models.CASCADE)
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invitations_sent')
     is_accepted = models.BooleanField(default=False)
     # Additional fields for the invitation
@@ -16,13 +15,35 @@ class invitation(models.Model):
 
     def accept_invitation(self):
         self.status = 'accepted'
-        self.event.invited_users.add(self.user)
-        self.event.save()
-        self.save()
 
+    def reject_invitation(self):
+        self.status = 'rejected'
+
+    def __str__(self):
+        return f"Invitation: {self.user.username} - {self.event.name}"
+    
+class temple_invitation(invitation):
+    associated_temple = models.ForeignKey(temple, on_delete=models.CASCADE)
+
+    def accept_invitation(self):
+        self.status = 'accepted'
+        self.associated_temple.invited_users.add(self.user)
+        self.associated_temple.save()
+        self.save()
+    
     def reject_invitation(self):
         self.status = 'rejected'
         self.save()
 
-    def __str__(self):
-        return f"Invitation: {self.user.username} - {self.event.name}"
+class event_invitation(invitation):
+    associated_event = models.ForeignKey(event, on_delete=models.CASCADE)
+    
+    def accept_invitation(self):
+        self.status = 'accepted'
+        self.associated_event.invited_users.add(self.user)
+        self.associated_event.save()
+        self.save()
+    
+    def reject_invitation(self):
+        self.status = 'rejected'
+        self.save()
