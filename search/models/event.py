@@ -7,11 +7,12 @@ from .location import location
 class event(models.Model):
     religious_establishment = models.ForeignKey(temple, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
     date = models.DateField()
     date_joined = models.DateTimeField(auto_now_add=True)
     invited_users = models.ManyToManyField(User, through='event_invitation', related_name="event_invitations")
-    requests_to_join = models.ManyToManyField(User, through='event_request', related_name="requested_events")
-    event_members = models.ManyToManyField(User, related_name="events")
+    requests_to_join = models.ManyToManyField(User,related_name="requested_events", blank=True)
+    event_members = models.ManyToManyField(User, related_name="events", blank=True)
     event_location = models.OneToOneField(location, on_delete=models.CASCADE, null=True)
     # Additional fields for the event
 

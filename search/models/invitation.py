@@ -11,12 +11,6 @@ class invitation(models.Model):
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')])
 
     # Additional fields for the invitation, such as a message or date
-
-    def accept_invitation(self):
-        self.status = 'accepted'
-
-    def reject_invitation(self):
-        self.status = 'rejected'
     
 class temple_invitation(invitation):
     associated_temple = models.ForeignKey(temple, on_delete=models.CASCADE)
@@ -39,18 +33,15 @@ class event_invitation(invitation):
     
     def accept_invitation(self):
         self.status = 'accepted'
+        self.is_accepted = True
         self.associated_event.event_members.add(self.user)
         self.associated_event.save()
         self.save()
     
     def reject_invitation(self):
+        self.is_accepted = False
         self.status = 'rejected'
         self.save()
     
     def __str__(self):
         return f"Invitation: {self.user.username} - {self.associated_event.name}"
-
-class temple_request(temple_invitation):
-    pass
-class event_request(event_invitation):
-    pass
