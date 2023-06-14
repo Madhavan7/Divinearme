@@ -1,4 +1,6 @@
 from django.db import models
+from .temple import temple
+from .event import event
 from django.contrib.auth.models import User
 
 class post(models.Model):
@@ -6,6 +8,12 @@ class post(models.Model):
   username = models.CharField(max_length=200)
   text = models.TextField()
   date_added = models.DateTimeField(auto_now_add=True)
+
+class temple_post(post):
+  temple = models.ForeignKey(temple, on_delete=models.CASCADE, related_name='posts')
+
+class event_post(post):
+  event = models.ForeignKey(event, on_delete=models.CASCADE, related_name='posts')
 
 class comment(models.Model):
   commenter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='commenter')

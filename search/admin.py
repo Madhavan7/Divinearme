@@ -6,6 +6,8 @@ from .models.invitation import event_invitation
 from .models.location import location
 from .models.temple import temple
 from .models.posts import post
+from .models.posts import temple_post
+from .models.posts import event_post
 from .models.posts import comment
 from .models.posts import commentReply
 # Register your models here.
@@ -18,3 +20,5 @@ admin.site.register(post)
 admin.site.register(comment)
 admin.site.register(commentReply)
 admin.site.register(location)
+admin.site.register(temple_post)
+admin.site.register(event_post)
