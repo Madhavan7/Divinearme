@@ -5,7 +5,7 @@ from .temple import temple
 from .location import location
 
 class event(models.Model):
-    religious_establishment = models.ForeignKey(temple, on_delete=models.CASCADE)
+    religious_establishment = models.ForeignKey(temple, on_delete=models.CASCADE, related_name='events')
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     date = models.DateField()
@@ -15,6 +15,7 @@ class event(models.Model):
     event_members = models.ManyToManyField(User, related_name="events", blank=True)
     event_location = models.OneToOneField(location, on_delete=models.CASCADE, null=True)
     # Additional fields for the event
-
+    def less_members(self):
+        return self.event_members.all().order_by("username")[:5]
     def __str__(self):
         return self.name

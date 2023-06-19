@@ -1,14 +1,9 @@
 from rest_framework import serializers
-
-import post_serializer
-import member_serializer
-import event_serializer
-
-class temple_serializer(serializers.Serializer):
-    name = serializers.CharField(max_length= 200)
-    location = serializers.CharField(max_length=200)
-    description = serializers.CharField()
-    date_joined = serializers.DateTimeField()
-    members = member_serializer(many = True)
-    events = event_serializer(many = True)
-    posts = post_serializer(many = True)
+from search.models.temple import temple
+from .event_serializer import event_serializer
+class temple_serializer(serializers.ModelSerializer):
+    temple_members = serializers.StringRelatedField(many=True, source = "less_members")
+    events = event_serializer(many=True, source="less_events")
+    class Meta:
+        model = temple
+        fields = ['name', 'temple_members', 'description', 'date_joined', 'events']

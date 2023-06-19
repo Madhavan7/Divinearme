@@ -1,9 +1,8 @@
 from rest_framework import serializers
 
-import comment_reply_serializer
+from search.models.posts import comment
 
 class comment_serializer(serializers.Serializer):
-    username = serializers.CharField(max_length=200)
-    text = serializers.CharField()
-    date_added = serializers.DateTimeField()
-    comment_reply = comment_reply_serializer(many=True)
+    class Meta:
+        model = comment
+        fields = '__all__'
