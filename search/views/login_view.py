@@ -5,7 +5,7 @@ from serializers.temple_serializer import temple_serializer
 from serializers.member_serializer import member_serializer
 from serializers.invitation_serializer import *
 from django.contrib.auth.models import User
-
+from serializers.post_serializer import post_serializer
 class login_view(views.APIView):
     serializer_class = member_serializer
     queryset = User.objects.all()
