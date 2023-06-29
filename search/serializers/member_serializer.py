@@ -4,4 +4,4 @@ from django.contrib.auth.models import User
 class member_serializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ['username', 'password', 'email']

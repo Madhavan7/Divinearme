@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 class post(models.Model):
   poster = models.ForeignKey(User, on_delete=models.CASCADE, related_name='poster')
   username = models.CharField(max_length=200)
+  title = models.CharField(max_length=200, default="new post")
   text = models.TextField()
   date_added = models.DateTimeField(auto_now_add=True)
 

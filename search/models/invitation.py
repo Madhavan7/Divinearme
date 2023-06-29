@@ -9,6 +9,7 @@ class invitation(models.Model):
     is_accepted = models.BooleanField(default=False)
     # Additional fields for the invitation
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')])
+    invite_time = models.DateTimeField(auto_now_add=True)
 
     # Additional fields for the invitation, such as a message or date
     
