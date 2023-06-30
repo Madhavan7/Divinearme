@@ -3,12 +3,14 @@ from django.contrib.auth.models import User
 
 class temple(models.Model):
     name = models.CharField(max_length=100)
+    private = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     temple_location = models.CharField(max_length = 200)
     date_joined = models.DateTimeField(auto_now_add=True)
     invited_users = models.ManyToManyField(User, through='temple_invitation', related_name="temple_invitations")
     requests_to_join = models.ManyToManyField(User, related_name="temple_requests", blank=True)
     temple_members = models.ManyToManyField(User, related_name="temples", blank=True)
+    admins = models.ManyToManyField(User, related_name="admins")
     #posts 
     def less_events(self):
         return self.events.all().order_by("-date")[:2]

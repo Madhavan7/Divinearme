@@ -5,6 +5,7 @@ from .temple import temple
 
 class event(models.Model):
     religious_establishment = models.ForeignKey(temple, on_delete=models.CASCADE, related_name='events')
+    private = models.BooleanField(default=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     date = models.DateField()
