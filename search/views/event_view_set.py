@@ -1,7 +1,7 @@
 from rest_framework import viewsets
-from serializers.event_serializer import event_serializer
-from models.temple import temple
-from models.event import event
+from search.serializers.event_serializer import event_serializer
+from search.models.temple import temple
+from search.models.event import event
 from django.contrib.auth.models import User
 
 class event_view_set(viewsets.ModelViewSet):
