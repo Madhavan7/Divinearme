@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models.invitation import *
+from search.models.invitation import *
 
 
 class temple_invitation_serializer(serializers.ModelSerializer):

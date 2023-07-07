@@ -10,6 +10,7 @@ from .models.posts import temple_post
 from .models.posts import event_post
 from .models.posts import comment
 from .models.posts import commentReply
+from .models.user_profile import user_model
 # Register your models here.
 admin.site.register(membership)
 admin.site.register(event)
@@ -22,3 +23,4 @@ admin.site.register(commentReply)
 admin.site.register(location)
 admin.site.register(temple_post)
 admin.site.register(event_post)
+admin.site.register(user_model)

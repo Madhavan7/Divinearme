@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from search.serializers.temple_serializer import temple_serializer
 from search.models.temple import temple
-from django.contrib.auth.models import User
+from search.models.user_profile import user_model
 from search.paginators import custom_pagination
 from search.serializers.member_serializer import member_serializer
 from search.serializers.event_serializer import event_serializer
@@ -13,7 +13,7 @@ class temple_view_set(ModelViewSet):
     pagination_class = custom_pagination
     def get_queryset(self):
         if 'user_pk' in self.kwargs:
-            return User.objects.get(id=self.kwargs['user_pk']).temples.all()
+            return user_model.objects.get(id=self.kwargs['user_pk']).temples.all()
         return super().get_queryset()
     #adds the info to the response - the info needed to render the temple
     def render_temple(self, temp:temple, response:dict):
@@ -37,7 +37,8 @@ class temple_view_set(ModelViewSet):
         if temp.private and request.user not in temp.temple_members.all():
             return Response(response_dict)
         else:
-            if request.user in temp.admins.all():
+            #have to change below since temp.admins.all now contains user_models
+            if request.user.id in temp.admins.all().value_list('id', flat = True):
                 self.render_temple_admin(temp, response_dict)
             else:
                 self.render_temple(temp, response_dict)
@@ -48,7 +49,11 @@ class temple_view_set(ModelViewSet):
             self.kwargs['user_pk'] = kwargs['user_pk']
         elif 'user_pk' in self.kwargs:
             self.kwargs.pop('user_pk')
-            
+
         return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        
+        return super().create(request, *args, **kwargs)
         
 
