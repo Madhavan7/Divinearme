@@ -1,25 +1,25 @@
 from django.urls import path
-from search.views.temple_view_set import temple_view_set
-from search.views.user_view_set import user_view_set
+from search.views.temple_view_set import TempleViewSet
+from search.views.user_view_set import UserViewSet
 
-temple_list = temple_view_set.as_view({
+temple_list = TempleViewSet.as_view({
     'get':'list'
 })
-temple_create = temple_view_set.as_view({
+temple_create = TempleViewSet.as_view({
     'post':'create'
 })
-temple_detail = temple_view_set.as_view({
+temple_detail = TempleViewSet.as_view({
     'put':'update',
     'get':'retrieve',
 })
 
-user_list = user_view_set.as_view({
+user_list = UserViewSet.as_view({
     'get':'list',
 })
-user_create = user_view_set.as_view({
+user_create = UserViewSet.as_view({
     'post':'create'
 })
-user_detail = user_view_set.as_view({
+user_detail = UserViewSet.as_view({
     'put':'update',
     'get':'retrieve',
 })

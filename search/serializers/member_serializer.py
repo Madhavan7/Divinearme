@@ -1,7 +1,12 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from search.models.user_profile import UserModel
 
-class member_serializer(serializers.ModelSerializer):
+class MemberSerializer(serializers.ModelSerializer):
+    #method_name will be get_username
+    username = serializers.SerializerMethodField()
     class Meta:
-        model = User
-        fields = ['username', 'email']
+        model = UserModel
+        fields = '__all__'
+    
+    def get_username(self, obj:UserModel):
+        return obj.user.username

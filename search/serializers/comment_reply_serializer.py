@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from search.models.posts import commentReply
+from search.models.posts import CommentReply
 
-class comment_reply_serializer(serializers.Serializer):
+class CommentReplySerializer(serializers.Serializer):
     class Meta:
-        model = commentReply
+        model = CommentReply
         fields = '__all__'

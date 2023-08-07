@@ -2,12 +2,12 @@ from rest_framework import serializers
 from search.models.invitation import *
 
 
-class temple_invitation_serializer(serializers.ModelSerializer):
+class TempleInvitationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = temple_invitation
+        model = TempleInvitation
         fields = '__all__'
 
-class event_invitation_serializer(serializers.ModelSerializer):
+class EventInvitationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = event_invitation
+        model = EventInvitation
         fields = '__all__'

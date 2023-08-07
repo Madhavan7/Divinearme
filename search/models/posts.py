@@ -10,10 +10,10 @@ class post(models.Model):
   text = models.TextField()
   date_added = models.DateTimeField(auto_now_add=True)
 
-class temple_post(post):
+class TemplePost(post):
   temple = models.ForeignKey(temple, on_delete=models.CASCADE, related_name='posts')
 
-class event_post(post):
+class EventPost(post):
   event = models.ForeignKey(event, on_delete=models.CASCADE, related_name='posts')
 
 class comment(models.Model):
@@ -24,5 +24,5 @@ class comment(models.Model):
   date_added = models.DateTimeField(auto_now_add=True)
 
 
-class commentReply(comment):
+class CommentReply(comment):
   parent_comment = models.ForeignKey(comment, on_delete=models.CASCADE, related_name='reply')

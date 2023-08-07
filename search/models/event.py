@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from .user_profile import user_model
+from .user_profile import UserModel
 from .temple import temple
 
 class event(models.Model):
@@ -12,9 +12,9 @@ class event(models.Model):
     start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    invited_users = models.ManyToManyField(user_model, through='event_invitation', related_name="event_invitations")
-    requests_to_join = models.ManyToManyField(user_model,related_name="requested_events", blank=True)
-    event_members = models.ManyToManyField(user_model, related_name="events", blank=True)
+    invited_users = models.ManyToManyField(UserModel, through='EventInvitation', related_name="event_invitations")
+    requests_to_join = models.ManyToManyField(UserModel,related_name="requested_events", blank=True)
+    event_members = models.ManyToManyField(UserModel, related_name="events", blank=True)
     event_location = models.CharField(max_length=200)
     # Additional fields for the event
     def less_members(self):

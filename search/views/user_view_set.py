@@ -1,15 +1,15 @@
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from search.serializers.invitation_serializer import *
-from search.serializers.temple_serializer import temple_serializer
+from search.serializers.temple_serializer import TempleSerializer
 from search.models.temple import temple
 from search.paginators import custom_pagination
-from search.serializers.member_serializer import member_serializer
-from search.serializers.event_serializer import event_serializer
+from search.serializers.member_serializer import MemberSerializer
+from search.serializers.event_serializer import EventSerializer
 
-class user_view_set(ModelViewSet):
-    serializer_class = member_serializer
-    queryset = user_model.objects.all()
+class UserViewSet(ModelViewSet):
+    serializer_class = MemberSerializer
+    queryset = UserModel.objects.all()
     pagination_class = custom_pagination
     temple = None
     event = None
@@ -21,12 +21,12 @@ class user_view_set(ModelViewSet):
             return event.objects.get(id=self.kwargs['event_pk']).event_members.all()
         return super().get_queryset()
 
-    def render_user(self, user:user_model, response:dict):
-        response['temples'] = temple_serializer(queryset = user_model.temples.all().order_by("name")[:3], many = True)
-        response['events'] = event_serializer(queryset = user_model.events.all().order_by("-start_date_time")[:3], many = True)
-        response['temple_invitations'] = temple_invitation_serializer(queryset = user_model.temple_invitations.all().order_by("-invite_time")[:3], many = True)
-        response['event_invitations'] = temple_invitation_serializer(queryset = user_model.event_invitations.all().order_by("-invite_time")[:3], many = True)
-        response['temple_requests'] = temple_serializer(queryset = user_model.objects.all().order_by("name")[:3], many = True)
+    def render_user(self, user:UserModel, response:dict):
+        response['temples'] = TempleSerializer(queryset = UserModel.temples.all().order_by("name")[:3], many = True)
+        response['events'] = EventSerializer(queryset = UserModel.events.all().order_by("-start_date_time")[:3], many = True)
+        response['temple_invitations'] = TempleInvitationSerializer(queryset = UserModel.temple_invitations.all().order_by("-invite_time")[:3], many = True)
+        response['event_invitations'] = TempleInvitationSerializer(queryset = UserModel.event_invitations.all().order_by("-invite_time")[:3], many = True)
+        response['temple_requests'] = TempleSerializer(queryset = UserModel.objects.all().order_by("name")[:3], many = True)
 
     def retrieve(self, request, *args, **kwargs):
         user = self.get_object()

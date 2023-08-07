@@ -1,11 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
-from .user_profile import user_model
+from .user_profile import UserModel
 from .temple import temple
 from .event import event
 
 class invitation(models.Model):
-    user = models.ForeignKey(user_model, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="invitations")
     is_accepted = models.BooleanField(default=False)
     # Additional fields for the invitation
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')])
@@ -13,7 +13,7 @@ class invitation(models.Model):
 
     # Additional fields for the invitation, such as a message or date
     
-class temple_invitation(invitation):
+class TempleInvitation(invitation):
     associated_temple = models.ForeignKey(temple, on_delete=models.CASCADE)
 
     def accept_invitation(self):
@@ -29,7 +29,7 @@ class temple_invitation(invitation):
     def __str__(self):
         return f"Invitation: {self.user.user.username} - {self.associated_temple.name}"
 
-class event_invitation(invitation):
+class EventInvitation(invitation):
     associated_event = models.ForeignKey(event, on_delete=models.CASCADE)
     
     def accept_invitation(self):

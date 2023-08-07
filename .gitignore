@@ -1,2 +1,2 @@
-./db.sqlite3
-./projEnv/bin/*
+/db.sqlite3
+/projEnv/

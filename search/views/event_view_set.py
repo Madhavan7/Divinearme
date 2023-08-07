@@ -1,15 +1,16 @@
 from rest_framework import viewsets
-from search.serializers.event_serializer import event_serializer
+from search.serializers.event_serializer import EventSerializer
 from search.models.temple import temple
 from search.models.event import event
-from django.contrib.auth.models import User
+from search.models.user_profile import UserModel
 
-class event_view_set(viewsets.ModelViewSet):
-    serializer_class = event_serializer
+class EventViewSet(viewsets.ModelViewSet):
+    serializer_class = EventSerializer
     queryset = event.objects.all()
     def get_queryset(self):
+        #have to check permissions
         if 'temple_pk' in self.kwargs:
             return temple.objects.get(id = self.kwargs['temple_pk']).events.all()
         if 'user_pk' in self.kwargs:
-            return User.objects.get(id = self.kwargs['user_pk']).events.all()
+            return UserModel.objects.get(id = self.kwargs['user_pk']).events.all()
         return super().get_queryset()
