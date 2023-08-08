@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 from .user_profile import UserModel
 from search.exceptions.exceptions import InvalidUserException
 class temple(models.Model):
@@ -17,25 +16,29 @@ class temple(models.Model):
         return self.events.all().order_by("-date")[:2]
     def less_members(self):
         return self.temple_members.all().order_by("username")[:5]
-    #adds user to the admins, returns whether it was successful
-    def add_admin(self, adder:UserModel, user:UserModel):
-        if adder in self.admins.all():
-            self.admins.add(user)
-            self.save()
-            return True
-        return False
+
     #adds user to temple_members, returns whether the operation was a success
     def add_member(self, adder:UserModel, user:UserModel, name:str):
         print("adding")
-        admins = self.admins.all()
-        invited = self.invited_users.all()
-        if name == "admins" and adder not in admins:
+        admin = self.admins.all().filter(id = adder.id).exists()
+        invited = self.invited_users.all().filter(id = adder.id).exists()
+        if name == "admins" and not admin:
             raise InvalidUserException()
         #below the error is that queryset objects are not callable
-        if admins.filter(id = adder.id).exists() or user in invited:
-            print("hello")
-            print(name, user)
+        if admin or invited:
+            if invited:
+                self.invited_users.all().filter(user=user.id).delete()
             getattr(self, name).add(user)
+            self.save()
+            return True
+        else:
+            raise InvalidUserException()
+
+    def add_events(self, adder:UserModel, event):
+        print("adding")
+        admin = self.admins.all().filter(id = adder.id).exists()
+        if admin:
+            getattr(self, "events").add(event)
             self.save()
             return True
         else:

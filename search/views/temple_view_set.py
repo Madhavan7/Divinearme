@@ -5,12 +5,14 @@ from search.exceptions.exceptions import InvalidUserException
 from search.serializers.temple_serializer import TempleSerializer
 from search.models.temple import temple
 from search.models.user_profile import UserModel
+from search.models.event import event
 from search.paginators import custom_pagination
 from search.serializers.member_serializer import MemberSerializer
 from search.serializers.event_serializer import EventSerializer
-import search.permissions.temple_permissions as perm
 from typing import List
 import json as json
+
+from search.views.view_builders.temple_view_builder import TempleViewDirector
 
 class TempleViewSet(ModelViewSet):
     serializer_class = TempleSerializer
@@ -26,32 +28,32 @@ class TempleViewSet(ModelViewSet):
         for ser in names:
             if isinstance(ser, dict) and "user" in ser:
                 try:
-                    print("adding")
                     u_model = UserModel.objects.get(user = ser["user"])
                     instance.add_member(adder, u_model, name)
                 except UserModel.DoesNotExist:
                     continue
         return instance
+    
+    def add_events(self, request, instance):
+        adder = UserModel.objects.get(user = request.user)
+        events = json.loads(request.data["events"])
+        if not isinstance(events, List):
+            return instance
+        for e in events:
+            if isinstance(e, dict) and "id" in e:
+                try:
+                    even = event.objects.get(id = e["id"])
+                    instance.add_event(adder, even)
+                except event.DoesNotExist:
+                    continue
+        return instance
+
+
     def get_queryset(self):
         if 'user_pk' in self.kwargs:
             #have to check permissions
             return UserModel.objects.get(id=self.kwargs['user_pk']).temples.all()
         return super().get_queryset()
-    #adds the info to the response - the info needed to render the temple
-    def render_temple(self, temp:temple, response:dict):
-        response['events'] = EventSerializer(temp.events.all().order_by('start_date_time')[:5], many = True).data
-    
-    #below is when the user is in the temple, so we can show more fields
-    def render_temple_detailed(self, temp:temple, response:dict):
-        self.render_temple(temp, response)
-        response['temple_members'] = MemberSerializer(temp.temple_members.all().order_by("user__username")[:5], many = True).data
-        print(response['temple_members'])
-
-    #below is when the user is the admin of the temple
-    def render_temple_admin(self, temp:temple, response:dict):
-        self.render_temple_detailed(temp, response)
-        response['invited_users'] = MemberSerializer(sorted(temp.invited_users.all(), key= lambda x:x.invitations.get(temple_invitation__associated_temple = temp).invite_time)[:5], many = True).data
-        response['requested_users'] = MemberSerializer(sorted(temp.requests_to_join.all(), key= lambda x:x.invitations.get(temple_invitation__associated_temple = temp).invite_time)[:5], many = True).data
     
     #overriding this, since temple serializer is not enough info for temple view
     def retrieve(self, request, *args, **kwargs):
@@ -59,12 +61,9 @@ class TempleViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         resp = serializer.data
-        can_view = perm.TempleViewPermission().has_object_permission(request, self, instance)
-        admin = perm.TempleUpdatePermission().has_object_permission(request, self, instance)
-        if admin:
-            self.render_temple_admin(instance, resp)
-        elif not admin and can_view:
-            self.render_temple_detailed(instance, resp)
+        temple_builder = TempleViewDirector(request, instance)
+        print(str(hasattr(request, "user")))
+        temple_builder.build(instance, resp)
         return Response(resp)
     
     def list(self, request, *args, **kwargs):
@@ -83,6 +82,7 @@ class TempleViewSet(ModelViewSet):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
     
     def update(self, request, *args, **kwargs):
+        #may need a helper function 
         #only way you can update is if admin
         #have to deal with adding members 
         try:
@@ -98,12 +98,16 @@ class TempleViewSet(ModelViewSet):
                 instance._prefetched_objects_cache = {}
 
             #Dealing with adding member
+            #now that I think about it its better if the check is done inside the function body
             if "temple_members" in request.data:
                 print(request.data["temple_members"])
                 self.add_members(request, instance, "temple_members")
             if "admins" in request.data:
                 self.add_members(request, instance, "admins")
             
+            #adding events
+            if "events" in request.data:
+                self.add_events(request, instance)
             instance.save()
             return Response(serializer.data)
         except InvalidUserException:
