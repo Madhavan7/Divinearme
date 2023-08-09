@@ -7,8 +7,6 @@ from search.models.temple import temple
 from search.models.user_profile import UserModel
 from search.models.event import event
 from search.paginators import custom_pagination
-from search.serializers.member_serializer import MemberSerializer
-from search.serializers.event_serializer import EventSerializer
 from typing import List
 import json as json
 
@@ -62,7 +60,6 @@ class TempleViewSet(ModelViewSet):
         serializer = self.get_serializer(instance)
         resp = serializer.data
         temple_builder = TempleViewDirector(request, instance)
-        print(str(hasattr(request, "user")))
         temple_builder.build(instance, resp)
         return Response(resp)
     
@@ -86,7 +83,7 @@ class TempleViewSet(ModelViewSet):
         #only way you can update is if admin
         #have to deal with adding members 
         try:
-            partial = kwargs.pop('partial', False)
+            partial = kwargs.pop('partial', True)
             instance = self.get_object()
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
             serializer.is_valid(raise_exception=True)

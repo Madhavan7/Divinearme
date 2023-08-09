@@ -17,8 +17,6 @@ class TempleSerializer(serializers.ModelSerializer):
             print(u_model)
             temp.temple_members.add(u_model)
             temp.admins.add(u_model)
-            print("added admin and member")
-            print("added admin: " + str(temp.admins.all().filter(id = u_model.id).exists()) + "added member: " + str(temp.temple_members.all().filter(id = u_model.id).exists()))
             temp.save()
             return temp
         else:

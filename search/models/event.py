@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ValidationError
 from .user_profile import UserModel
 from .temple import temple
 
@@ -7,7 +8,6 @@ class event(models.Model):
     private = models.BooleanField(default=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    date = models.DateField()
     start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -15,6 +15,11 @@ class event(models.Model):
     requests_to_join = models.ManyToManyField(UserModel,related_name="requested_events", blank=True)
     event_members = models.ManyToManyField(UserModel, related_name="events", blank=True)
     event_location = models.CharField(max_length=200)
+
+    def clean(self) -> None:
+        if self.start_date_time >= self.end_date_time:
+            raise ValidationError(("Start date/time must be before End date/time"), code="invalid-date-time")
+        
     # Additional fields for the event
     def less_members(self):
         return self.event_members.all().order_by("username")[:5]

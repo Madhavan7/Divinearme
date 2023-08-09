@@ -27,7 +27,6 @@ class TempleUpdatePermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if not hasattr(request, "user"):
-            print("something is wrong")
             return False
         u_model = UserModel.objects.get(user = request.user)
         print(u_model)
