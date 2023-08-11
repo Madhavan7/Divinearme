@@ -2,7 +2,7 @@ from django.db import models
 from django.forms import ValidationError
 from .user_profile import UserModel
 from .temple import temple
-
+from search.exceptions.exceptions import InvalidUserException
 class event(models.Model):
     religious_establishment = models.ForeignKey(temple, on_delete=models.CASCADE, related_name='events')
     private = models.BooleanField(default=False)
@@ -20,10 +20,17 @@ class event(models.Model):
         if self.start_date_time >= self.end_date_time:
             raise ValidationError(("Start date/time must be before End date/time"), code="invalid-date-time")
         
-    # Additional fields for the event
-    def less_members(self):
-        return self.event_members.all().order_by("username")[:5]
-    def less_posts(self):
-        return self.posts.all().order_by("-date_added")[:3]
+    def add_members(self, adder:UserModel, user:UserModel):
+        admin = self.religious_establishment.admins.all().filter(id = adder.id).exists()
+        invited = self.invited_users.all().filter(id = adder.id).exists()
+        #below the error is that queryset objects are not callable
+        if admin or invited:
+            if invited:
+                self.invited_users.all().filter(user=user.id).delete()
+            self.event_members.add(user)
+            self.save()
+            return True
+        else:
+            raise InvalidUserException()
     def __str__(self):
         return self.name

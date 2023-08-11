@@ -7,6 +7,7 @@ from search.models.temple import temple
 from search.models.user_profile import UserModel
 from search.models.event import event
 from search.paginators import custom_pagination
+from search.permissions.temple_permissions import TempleUpdatePermission
 from typing import List
 import json as json
 
@@ -18,6 +19,8 @@ class TempleViewSet(ModelViewSet):
     pagination_class = custom_pagination
 
     def add_members(self, request, instance, name):
+        if name not in request.data:
+            return instance
         adder = UserModel.objects.get(user = request.user)
         #adding members to the queryset
         names = json.loads(request.data[name])
@@ -32,7 +35,25 @@ class TempleViewSet(ModelViewSet):
                     continue
         return instance
     
+    def remove_members(self, request, instance):
+        if "remove_members" not in request.data:
+            return instance
+        remover = UserModel.objects.get(user=request.user)
+        names = json.loads(request.data["remove_members"])
+        if not isinstance(names, List):
+            return instance
+        for ser in names:
+            if isinstance(ser, dict) and "user" in ser:
+                try:
+                    u_model = UserModel.objects.get(user=ser["user"])
+                    instance.remove_member(remover, u_model)
+                except UserModel.DoesNotExist:
+                    continue
+        return instance
+    
     def add_events(self, request, instance):
+        if "events" not in request.data:
+            return instance
         adder = UserModel.objects.get(user = request.user)
         events = json.loads(request.data["events"])
         if not isinstance(events, List):
@@ -96,26 +117,22 @@ class TempleViewSet(ModelViewSet):
 
             #Dealing with adding member
             #now that I think about it its better if the check is done inside the function body
-            if "temple_members" in request.data:
-                print(request.data["temple_members"])
-                self.add_members(request, instance, "temple_members")
-            if "admins" in request.data:
-                self.add_members(request, instance, "admins")
-            
-            #adding events
-            if "events" in request.data:
-                self.add_events(request, instance)
+            self.add_members(request, instance, "temple_members")
+            self.add_members(request, instance, "admins")
+            self.add_events(request, instance)
+            self.remove_members(request, instance)
             instance.save()
             return Response(serializer.data)
         except InvalidUserException:
             return Response(status = status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, request, *args, **kwargs):
-        #only way to destroy is to be an admin
-        #have to deal with deleting members
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except InvalidUserException:
-            return Response(status = status.HTTP_401_UNAUTHORIZED)
+        #currently all admins can destroy the temple which is a flaw, maybe can add a king admin
+        temp = self.get_object()
+        if not TempleUpdatePermission().has_object_permission(request, None, temp):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            self.perform_destroy(temp)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         
 

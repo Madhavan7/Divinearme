@@ -19,7 +19,6 @@ class temple(models.Model):
 
     #adds user to temple_members, returns whether the operation was a success
     def add_member(self, adder:UserModel, user:UserModel, name:str):
-        print("adding")
         admin = self.admins.all().filter(id = adder.id).exists()
         invited = self.invited_users.all().filter(id = adder.id).exists()
         if name == "admins" and not admin:
@@ -34,7 +33,18 @@ class temple(models.Model):
         else:
             raise InvalidUserException()
 
-    def add_events(self, adder:UserModel, event):
+    def remove_member(self, remover: UserModel, user:UserModel):
+        admin = self.admins.all().filter(id = remover.id).exists()
+        member_is_admin = self.admins.all().filter(id = user.id).exists()
+        member = self.temple_members.all().filter(id=user.id).exists()
+        if not admin or member_is_admin:
+            raise InvalidUserException()
+        elif member:
+            self.temple_members.remove(user)
+        else:
+            return
+
+    def add_event(self, adder:UserModel, event):
         print("adding")
         admin = self.admins.all().filter(id = adder.id).exists()
         if admin:
@@ -43,5 +53,13 @@ class temple(models.Model):
             return True
         else:
             raise InvalidUserException()
+    
+    def remove_event(self, remover:UserModel, event):
+        admin = self.admins.all().filter(id=remover.id).exists()
+        if admin and self.events.all().filter(id=event.id).exists():
+            event.delete()
+        else:
+            raise InvalidUserException()
+        self.save()
     def __str__(self):
         return self.name
