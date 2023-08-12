@@ -29,7 +29,6 @@ class EventViewSet(viewsets.ModelViewSet):
         elif 'temple_pk' in self.kwargs:
             self.kwargs.pop('temple_pk')
         return None
-    
     def get_queryset(self):
         #have to check permissions
         #assumes that kwargs does not contain both

@@ -43,7 +43,7 @@ urlpatterns = [
                #path('temples/<str:temple_pk>/posts/create/),
                path('temples/<str:temple_pk>/events/create/', event_create, name='event-create'),
                path('temples/<str:temple_pk>/events/', event_list, name='event-list'),
-               path('temples/<str:temple_pk>/events/<str:pk>/', event_detail, name='event-detail')
+               path('temples/<str:temple_pk>/events/<str:pk>/', event_detail, name='event-detail'),
                #path('temples/<str:temple_pk>/posts/'),
                #path('temples/<str:temple_pk>/posts/<str:post_pk>/'),
                #path('temples/<str:temple_pk>/posts/create/'),
