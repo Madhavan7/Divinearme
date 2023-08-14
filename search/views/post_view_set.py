@@ -8,11 +8,12 @@ from search.serializers.post_serializer import PostSerializer
 from search.models.temple import temple
 from search.models.event import event
 from search.models.user_profile import UserModel
+from search.models.posts import *
 from .view_builders.event_view_builder import *
 import search.permissions.temple_permissions as temple_perm
 import search.permissions.event_permissions as event_perm
 from rest_framework.serializers import ValidationError
-from typing import List
+from typing import Any, List
 import json as json
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -42,7 +43,29 @@ class PostViewSet(viewsets.ModelViewSet):
         #gotta add seperate if statements for users
         if 'temple_pk' in self.kwargs:
             #temp = temple.objects.get(id = self.kwargs['temple_pk'])
-            return temple.objects.get(id = self.kwargs['temple_pk']).events.all()
+            return TemplePost.objects.get(templeID = self.kwargs['temple_pk']).events.all()
         if 'event_pk' in self.kwargs:
-            return UserModel.objects.get(id = self.kwargs['event_pk']).events.all()
+            return EventPost.objects.get(eventID = self.kwargs['event_pk']).events.all()
         return super().get_queryset()
+
+    def create(self, request, *args, **kwargs):
+        try:
+            self.set_args(request, *args, **kwargs)
+            can_post = temple_perm.TemplePostCommentPermission().has_object_permission(request, *args, **kwargs) if "temple_pk" in self.kwargs else event_perm.EventPostCommentPermission().has_object_permission(request, *args, **kwargs)
+            if not can_post:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+            req = request.data.copy()
+            req["commenter"] = UserModel.objects.get(user=request.user).id
+            serializer = self.get_serializer(data=req)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except KeyError or UserModel.DoesNotExist:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        except ValidationError as val:
+            errors = val.detail
+            return Response(errors, status=status.HTTP_401_UNAUTHORIZED)
+    
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

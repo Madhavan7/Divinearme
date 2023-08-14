@@ -6,11 +6,16 @@ from .temple_permissions import *
     
 class PostViewPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
-        u_model = UserModel.objects.get(user = request.user)
-        return obj.can_view(u_model)
-
+        try:
+            u_model = UserModel.objects.get(user = request.user)
+            return obj.can_view(u_model)
+        except:
+            return False
 class PostUpdateDeletePermission(BasePermission):
     def has_object_permission(self, request, view, obj):
-        u_model = UserModel.objects.get(user=request.user)
-        #delete permission is equivalent to update
-        return obj.can_delete(u_model)
+        try:
+            u_model = UserModel.objects.get(user=request.user)
+            #delete permission is equivalent to update
+            return obj.can_delete(u_model)
+        except:
+            return False
