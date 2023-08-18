@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from search.exceptions.exceptions import InvalidUserException
+from search.paginators import custom_pagination
 from search.serializers.event_serializer import EventSerializer
 from search.models.temple import temple
 from search.models.event import event
@@ -15,6 +16,7 @@ import json as json
 class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     queryset = event.objects.all()
+    pagination_class = custom_pagination
     def set_args(self, request, *args, **kwargs):
         if 'user_pk' in kwargs:
             self.kwargs['user_pk'] = kwargs['user_pk']
@@ -60,6 +62,9 @@ class EventViewSet(viewsets.ModelViewSet):
         #invalid is None if and only if person does not have viewing priviliges
         try:
             self.set_args(request, *args, **kwargs)
+            #since the below statement printed, it passes self.set_args
+            print("didnt return None")
+            #self.get_paginated_queryset is returning none
             super().list(request, *args, **kwargs)
         except InvalidUserException():
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -70,8 +75,10 @@ class EventViewSet(viewsets.ModelViewSet):
             instance = self.get_object()
             serializer = self.get_serializer(instance)
             resp = serializer.data
+            print(resp)
             event_builder = EventViewDirector(instance, request)
             event_builder.build(instance, resp)
+            print(resp)
         except InvalidUserException():
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         return Response(resp)
