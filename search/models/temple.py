@@ -65,7 +65,6 @@ class temple(models.Model):
             return
 
     def add_event(self, adder:UserModel, event):
-        print("adding")
         admin = self.admins.all().filter(id = adder.id).exists()
         if admin:
             getattr(self, "events").add(event)
