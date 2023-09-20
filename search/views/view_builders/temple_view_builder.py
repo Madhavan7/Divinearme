@@ -30,9 +30,11 @@ class TempleNormalView(TempleViewBuilder):
 class TempleAdminView(TempleViewBuilder):
   def build(self, temple, response):
     response['events'] = EventSerializer(temple.events.all().order_by('start_date_time')[:5], many = True).data
-    response['invited_users'] = MemberSerializer(sorted(temple.invited_users.all(), key= lambda x:x.invitations.get(temple_invitation__associated_temple = temple).invite_time)[:5], many = True).data
-    response['requested_users'] = MemberSerializer(sorted(temple.requests_to_join.all(), key= lambda x:x.invitations.get(temple_invitation__associated_temple = temple).invite_time)[:5], many = True).data
-
+    #Bug below
+    #Below is faulty
+    #response['invited_users'] = MemberSerializer(sorted(temple.invited_users.all(), key= lambda x:x.temple_invitations.get(templeinvitation__associated_temple = temple).invite_time)[:5], many = True).data
+    #response['requested_users'] = MemberSerializer(sorted(temple.requests_to_join.all(), key= lambda x:x.temple_invitations.get(templeinvitation__associated_temple = temple).invite_time)[:5], many = True).data
+    response['invited_users'] = MemberSerializer(temple.invited_users.all()[:5], many = True).data
 class TempleGuestView(TempleViewBuilder):
   def build(self, temple, response):
     super().build(temple, response)

@@ -17,6 +17,7 @@ class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     queryset = event.objects.all()
     pagination_class = custom_pagination
+
     def set_args(self, request, *args, **kwargs):
         if 'user_pk' in kwargs:
             self.kwargs['user_pk'] = kwargs['user_pk']
@@ -64,9 +65,6 @@ class EventViewSet(viewsets.ModelViewSet):
         #invalid is None if and only if person does not have viewing priviliges
         try:
             self.set_args(request, *args, **kwargs)
-            #since the below statement printed, it passes self.set_args
-            print("didnt return None")
-            #self.get_paginated_queryset is returning none
             return super().list(request, *args, **kwargs)
         except InvalidUserException():
             return Response(status=status.HTTP_401_UNAUTHORIZED)

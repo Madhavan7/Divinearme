@@ -7,7 +7,7 @@ class temple(models.Model):
     description = models.TextField(blank=True)
     temple_location = models.CharField(max_length = 200)
     date_joined = models.DateTimeField(auto_now_add=True)
-    invited_users = models.ManyToManyField(UserModel, through='TempleInvitation', related_name="temple_invitations")
+    invited_users = models.ManyToManyField(UserModel, through='TempleInvitation')
     requests_to_join = models.ManyToManyField(UserModel, related_name="temple_requests", blank=True)
     temple_members = models.ManyToManyField(UserModel, related_name="temples", blank=True)
     admins = models.ManyToManyField(UserModel, related_name="admins")
@@ -23,7 +23,8 @@ class temple(models.Model):
         if not member and name != "temple_members":
             raise InvalidUserException()
         elif not member and name == "temple_members":
-            self.invited_users.add(user)
+            #problem here since invited_users is a multi-table model, need a TempleInvitation first
+            self.invited_users.through.objects.create(user= user, associated_temple=self)
             self.save()
             return
         elif name != "temple_members":
@@ -36,13 +37,12 @@ class temple(models.Model):
     def add_member(self, adder:UserModel, user:UserModel, name:str):
         #I need to edit below because too many if statements is not a god idea
         admin = self.admins.all().filter(id = adder.id).exists()
-        invited = self.invited_users.all().filter(id = adder.id).exists()
+        invited = self.invited_users.all().filter(id = user.id).exists()
         if name == "admins" and not admin:
             raise InvalidUserException()
         if admin or invited:
             if invited:
-                #problematic
-                self.invited_users.all().filter(user=user.id).delete()
+                self.invited_users.remove(user.id)
                 if name == "temple_members":
                     self.temple_members.add(user)
                     self.save()

@@ -19,9 +19,10 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     queryset = post.objects.all()
     _post_owner = None
-
+    
     def get_serializer_class(self):
         if isinstance(self._post_owner, temple):
+            print("temple")
             return TemplePostSerializer
         elif isinstance(self._post_owner, event):
             return EventPostSerializer
@@ -53,10 +54,9 @@ class PostViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         #gotta add seperate if statements for users
         if 'temple_pk' in self.kwargs:
-            #temp = temple.objects.get(id = self.kwargs['temple_pk'])
-            return TemplePost.objects.get(templeID = self.kwargs['temple_pk']).events.all()
+            return temple.objects.get(id = self.kwargs['temple_pk']).posts.all()
         if 'event_pk' in self.kwargs:
-            return EventPost.objects.get(eventID = self.kwargs['event_pk']).events.all()
+            return event.objects.get(id = self.kwargs['event_pk']).posts.all()
         return super().get_queryset()
 
     def create(self, request, *args, **kwargs):
@@ -66,6 +66,7 @@ class PostViewSet(viewsets.ModelViewSet):
             if not can_post:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
             req = request.data.copy()
+            req["username"] = request.user.username
             req["poster"] = UserModel.objects.get(user=request.user).id
             req["eventID"] = self._post_owner.id
             req["templeID"] = self._post_owner.id

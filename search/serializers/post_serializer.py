@@ -14,5 +14,5 @@ class TemplePostSerializer(serializers.ModelSerializer):
 
 class EventPostSerializer(serializers.ModelSerializer):
     class Meta(PostSerializer.Meta):
-        model = TemplePost
+        model = EventPost
         fields = ['title','poster', 'username', 'text', 'date_added', 'eventID']
