@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from search.exceptions.exceptions import InvalidUserException
+from search.paginators import custom_pagination
 from search.serializers.event_serializer import EventSerializer
 from search.models.temple import temple
 from search.models.event import event
@@ -15,6 +16,8 @@ import json as json
 class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     queryset = event.objects.all()
+    pagination_class = custom_pagination
+
     def set_args(self, request, *args, **kwargs):
         if 'user_pk' in kwargs:
             self.kwargs['user_pk'] = kwargs['user_pk']
@@ -25,7 +28,9 @@ class EventViewSet(viewsets.ModelViewSet):
             self.kwargs['temple_pk'] = kwargs['temple_pk']
             temp = temple.objects.get(id = self.kwargs['temple_pk'])
             if not temple_perm.TempleViewPermission().has_object_permission(request, None, temp):
+                print("cant access temple")
                 raise InvalidUserException()
+            return
         elif 'temple_pk' in self.kwargs:
             self.kwargs.pop('temple_pk')
         return None
@@ -60,21 +65,23 @@ class EventViewSet(viewsets.ModelViewSet):
         #invalid is None if and only if person does not have viewing priviliges
         try:
             self.set_args(request, *args, **kwargs)
-            super().list(request, *args, **kwargs)
+            return super().list(request, *args, **kwargs)
         except InvalidUserException():
             return Response(status=status.HTTP_401_UNAUTHORIZED)
     
     def retrieve(self, request, *args, **kwargs):
         try:
             self.set_args(request, *args, **kwargs)
+            print("successfully set args")
             instance = self.get_object()
             serializer = self.get_serializer(instance)
             resp = serializer.data
+            print(resp)
             event_builder = EventViewDirector(instance, request)
             event_builder.build(instance, resp)
+            return Response(resp)
         except InvalidUserException():
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        return Response(resp)
     
     def create(self, request, *args, **kwargs):
         #I have to find a way to make sure exceptions give the right messages

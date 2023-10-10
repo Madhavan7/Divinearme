@@ -7,7 +7,7 @@ class temple(models.Model):
     description = models.TextField(blank=True)
     temple_location = models.CharField(max_length = 200)
     date_joined = models.DateTimeField(auto_now_add=True)
-    invited_users = models.ManyToManyField(UserModel, through='TempleInvitation', related_name="temple_invitations")
+    invited_users = models.ManyToManyField(UserModel, through='TempleInvitation')
     requests_to_join = models.ManyToManyField(UserModel, related_name="temple_requests", blank=True)
     temple_members = models.ManyToManyField(UserModel, related_name="temples", blank=True)
     admins = models.ManyToManyField(UserModel, related_name="admins")
@@ -16,19 +16,39 @@ class temple(models.Model):
         return self.events.all().order_by("-date")[:2]
     def less_members(self):
         return self.temple_members.all().order_by("username")[:5]
+    
+    def _add_uninvited_member(self, user:UserModel, name:str):
+        #at this point we know that user is not invited
+        member = self.temple_members.all().filter(id = user.id).exists()
+        if not member and name != "temple_members":
+            raise InvalidUserException()
+        elif not member and name == "temple_members":
+            #problem here since invited_users is a multi-table model, need a TempleInvitation first
+            self.invited_users.through.objects.create(user= user, associated_temple=self)
+            self.save()
+            return
+        elif name != "temple_members":
+            getattr(self, name).add(user)
+            self.save()
+            return
+
 
     #adds user to temple_members, returns whether the operation was a success
     def add_member(self, adder:UserModel, user:UserModel, name:str):
+        #I need to edit below because too many if statements is not a god idea
         admin = self.admins.all().filter(id = adder.id).exists()
-        invited = self.invited_users.all().filter(id = adder.id).exists()
+        invited = self.invited_users.all().filter(id = user.id).exists()
         if name == "admins" and not admin:
             raise InvalidUserException()
-        #below the error is that queryset objects are not callable
         if admin or invited:
             if invited:
-                self.invited_users.all().filter(user=user.id).delete()
-            getattr(self, name).add(user)
-            self.save()
+                self.invited_users.remove(user.id)
+                if name == "temple_members":
+                    self.temple_members.add(user)
+                    self.save()
+            #must be admin and not invited
+            else:
+                self._add_uninvited_member(user, name)
             return True
         else:
             raise InvalidUserException()
@@ -45,7 +65,6 @@ class temple(models.Model):
             return
 
     def add_event(self, adder:UserModel, event):
-        print("adding")
         admin = self.admins.all().filter(id = adder.id).exists()
         if admin:
             getattr(self, "events").add(event)

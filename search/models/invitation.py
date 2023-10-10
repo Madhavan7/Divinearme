@@ -5,7 +5,6 @@ from .temple import temple
 from .event import event
 
 class invitation(models.Model):
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="invitations")
     is_accepted = models.BooleanField(default=False)
     # Additional fields for the invitation
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')])
@@ -14,7 +13,11 @@ class invitation(models.Model):
     # Additional fields for the invitation, such as a message or date
     
 class TempleInvitation(invitation):
-    associated_temple = models.ForeignKey(temple, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="temple_invitations")
+    associated_temple = models.ForeignKey(temple, on_delete=models.CASCADE, related_name="invited_users_invitations")
+
+    #class Meta:
+        #constraints = [models.UniqueConstraint(fields=['associated_temple', 'user'], name='unique-temple-invitation')]
 
     def accept_invitation(self):
         self.status = 'accepted'
@@ -30,8 +33,11 @@ class TempleInvitation(invitation):
         return f"Invitation: {self.user.user.username} - {self.associated_temple.name}"
 
 class EventInvitation(invitation):
-    associated_event = models.ForeignKey(event, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="event_invitations")
+    associated_event = models.ForeignKey(event, on_delete=models.CASCADE, related_name="invited_users_invitations")
     
+    #class Meta:
+        #constraints = [models.UniqueConstraint(fields=['associated_event', 'user'], name='unique-event-invitation')]
     def accept_invitation(self):
         self.status = 'accepted'
         self.is_accepted = True
