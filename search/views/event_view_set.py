@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from search.exceptions.exceptions import InvalidUserException
 from search.paginators import custom_pagination
 from search.serializers.event_serializer import EventSerializer
@@ -14,6 +15,7 @@ from typing import List
 import json as json
 
 class EventViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = EventSerializer
     queryset = event.objects.all()
     pagination_class = custom_pagination

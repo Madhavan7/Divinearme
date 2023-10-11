@@ -14,7 +14,6 @@ class TempleSerializer(serializers.ModelSerializer):
         if request and hasattr(request, "user") and not isinstance(request.user, AnonymousUser):
             temp = super().create(validated_data)
             u_model = UserModel.objects.get(user = request.user)
-            print(u_model)
             temp.temple_members.add(u_model)
             temp.admins.add(u_model)
             temp.save()

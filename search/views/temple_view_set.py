@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from search.exceptions.exceptions import InvalidUserException
 from search.serializers.temple_serializer import TempleSerializer
 from search.models.temple import temple
@@ -14,6 +15,7 @@ import json as json
 from search.views.view_builders.temple_view_builder import TempleViewDirector
 
 class TempleViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = TempleSerializer
     queryset = temple.objects.all()
     pagination_class = custom_pagination
