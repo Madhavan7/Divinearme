@@ -11,6 +11,7 @@ from search.paginators import custom_pagination
 from search.permissions.temple_permissions import TempleUpdatePermission
 from typing import List
 import json as json
+from django.db import transaction
 
 from search.views.view_builders.temple_view_builder import TempleViewDirector
 
@@ -119,11 +120,12 @@ class TempleViewSet(ModelViewSet):
 
             #Dealing with adding member
             #now that I think about it its better if the check is done inside the function body
-            self.add_members(request, instance, "temple_members")
-            self.add_members(request, instance, "admins")
-            self.add_events(request, instance)
-            self.remove_members(request, instance)
-            instance.save()
+            with transaction.atomic():
+                self.add_members(request, instance, "temple_members")
+                self.add_members(request, instance, "admins")
+                self.add_events(request, instance)
+                self.remove_members(request, instance)
+                instance.save()
             return Response(serializer.data)
         except InvalidUserException:
             return Response(status = status.HTTP_401_UNAUTHORIZED)

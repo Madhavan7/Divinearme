@@ -4,8 +4,9 @@ from .temple_permissions import *
 class EventViewPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if obj.private:
+          u_model = UserModel.objects.get(user = request.user)
           temple = obj.religious_establishment
-          return TempleViewPermission().has_object_permission(request, view, temple)
+          return TempleViewPermission().has_object_permission(request, view, temple) or obj.event_members.filter(id = u_model.id).exists()
         else:
             return request.method in SAFE_METHODS
 

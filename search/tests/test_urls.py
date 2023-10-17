@@ -5,5 +5,4 @@ from search.urls import temple_list
 class TestUrls(SimpleTestCase):
     def test_temple_create(self):
         url = reverse('temple-list')
-        print(resolve(url))
         self.assertEquals(resolve(url).func, temple_list)

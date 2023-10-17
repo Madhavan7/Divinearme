@@ -16,6 +16,9 @@ class event(models.Model):
     event_members = models.ManyToManyField(UserModel, related_name="events", blank=True)
     event_location = models.CharField(max_length=200)
 
+    class Meta:
+        ordering = ["start_date_time"]
+
     def clean(self) -> None:
         if self.start_date_time >= self.end_date_time:
             raise ValidationError(("Start date/time must be before End date/time"), code="invalid-date-time")

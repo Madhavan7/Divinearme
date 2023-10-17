@@ -11,6 +11,8 @@ class temple(models.Model):
     requests_to_join = models.ManyToManyField(UserModel, related_name="temple_requests", blank=True)
     temple_members = models.ManyToManyField(UserModel, related_name="temples", blank=True)
     admins = models.ManyToManyField(UserModel, related_name="admins")
+    class Meta:
+        ordering = ["date_joined"]
     #posts 
     def less_events(self):
         return self.events.all().order_by("-date")[:2]

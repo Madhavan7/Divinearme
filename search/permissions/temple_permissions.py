@@ -29,5 +29,4 @@ class TempleUpdatePermission(BasePermission):
         if not hasattr(request, "user"):
             return False
         u_model = UserModel.objects.get(user = request.user)
-        print(u_model)
         return obj.admins.all().filter(id = u_model.id).exists()

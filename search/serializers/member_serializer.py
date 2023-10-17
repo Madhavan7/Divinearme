@@ -10,5 +10,10 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = '__all__'
     def create(self, validated_data):
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+    
+    
     def get_username(self, obj:UserModel):
         return obj.user.username
