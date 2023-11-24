@@ -15,7 +15,8 @@ class EventPostCommentPermission(BasePermission):
         if not obj.private:
             return True
         temple = obj.religious_establishment
-        return TemplePostCommentPermission().has_object_permission(request, view, temple)
+        u_model = UserModel.objects.get(user = request.user)
+        return TemplePostCommentPermission().has_object_permission(request, view, temple) or obj.event_members.filter(id=u_model.id).exists()
 
 class EventUpdatePermission(BasePermission):
     def has_object_permission(self, request, view, obj):

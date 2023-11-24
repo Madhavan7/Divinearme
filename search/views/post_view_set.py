@@ -24,7 +24,6 @@ class PostViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         if isinstance(self._post_owner, temple):
-            print("temple")
             return TemplePostSerializer
         elif isinstance(self._post_owner, event):
             return EventPostSerializer
@@ -38,8 +37,6 @@ class PostViewSet(viewsets.ModelViewSet):
             temp = event.objects.get(id = self.kwargs['event_pk'])
             self._post_owner = temp
             #below is kind of restrictive becuse they can only comment if they can view the post
-            if not event_perm.EventPostCommentPermission().has_object_permission(request, None, temp):
-                raise InvalidUserException()
         elif 'event_pk' in self.kwargs:
             self.kwargs.pop('event_pk')
         
@@ -47,9 +44,6 @@ class PostViewSet(viewsets.ModelViewSet):
             self.kwargs['temple_pk'] = kwargs['temple_pk']
             temp = temple.objects.get(id = self.kwargs['temple_pk'])
             self._post_owner = temp
-            if not temple_perm.TemplePostCommentPermission().has_object_permission(request, None, temp):
-                print(request.user)
-                raise InvalidUserException()
         elif 'temple_pk' in self.kwargs:
             self.kwargs.pop('temple_pk')
         return None
