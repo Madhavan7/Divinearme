@@ -9,10 +9,13 @@ class TempleViewDirector():
     admin = perm.TempleUpdatePermission().has_object_permission(request, None, temple)
     if admin:
       self._builder = TempleAdminView()
+      return
     elif can_view:
       self._builder = TempleNormalView()
+      return
     else:
       self._builder = TempleGuestView()
+      return
   
   def build(self, temple, response):
     self._builder.build(temple, response)

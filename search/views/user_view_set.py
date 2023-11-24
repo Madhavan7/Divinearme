@@ -82,6 +82,8 @@ class UserViewSet(ModelViewSet):
             with transaction.atomic():
                 req = request.data.copy()
                 user = User.objects.create(username = req.get('username', None), password = req.get('password', None))
+                user.set_password(req.get('password', None))
+                user.save()
                 req['user'] = user.id
                 serializer = self.get_serializer(data = req)
                 serializer.is_valid(raise_exception=True)

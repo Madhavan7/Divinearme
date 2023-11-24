@@ -40,7 +40,6 @@ class EventViewSet(viewsets.ModelViewSet):
         #have to check permissions
         #assumes that kwargs does not contain both
         if 'temple_pk' in self.kwargs:
-            #temp = temple.objects.get(id = self.kwargs['temple_pk'])
             return temple.objects.get(id = self.kwargs['temple_pk']).events.all()
         if 'user_pk' in self.kwargs:
             return UserModel.objects.get(id = self.kwargs['user_pk']).events.all()

@@ -1,4 +1,4 @@
-from django.test import TestCase, Client, TransactionTestCase
+from django.test import Client, TransactionTestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from search.models.user_profile import UserModel
