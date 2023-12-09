@@ -9,7 +9,8 @@ class PostViewPermission(BasePermission):
         try:
             u_model = UserModel.objects.get(user = request.user)
             return obj.can_view(u_model)
-        except:
+        except Exception as e:
+            print(e)
             return False
 class PostUpdateDeletePermission(BasePermission):
     def has_object_permission(self, request, view, obj):

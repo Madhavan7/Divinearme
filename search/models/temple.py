@@ -49,6 +49,9 @@ class temple(models.Model):
         self.lattitude = response['candidates'][0]['geometry']['location']['lat']
         return super(temple, self).save(*args, **kwargs)
     
+    def can_view(self, user_model):
+        return not self.private or self.temple_members.all().filter(id = user_model.id).exists()
+    
     def _add_uninvited_member(self, user:UserModel, name:str):
         #at this point we know that user is not invited
         member = self.temple_members.all().filter(id = user.id).exists()

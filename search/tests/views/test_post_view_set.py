@@ -40,6 +40,7 @@ class TestPostViewSet(TransactionTestCase):
     self.user_model3.save()
 
     self.temple1.temple_members.add(self.user_model1)
+    self.temple1.private = True
     self.event1.event_members.add(self.user_model2)
 
     self.event1.private = True
@@ -54,7 +55,7 @@ class TestPostViewSet(TransactionTestCase):
     token = client.post(login_url, data=json.dumps({"username":user, "password":password}),content_type='application/json').data['access']
     return token, client
   
-  def test_post_create(self):
+  def test_post_create_retrieve_update(self):
     token1, client1 = self.login("madhav", "sat.chit.anand")
     token2, client2 = self.login("meenakshi", "sat.chit.anand")
     token3, client3 = self.login("arya", "sat.chit.anand")
@@ -81,4 +82,36 @@ class TestPostViewSet(TransactionTestCase):
     #madhav should be able to post in the event as he is part of the temple
     response = client1.post(url2,json.dumps({'title':'just a stranger', 'text':'nothing just a stranger'}),**{'HTTP_AUTHORIZATION': f'Bearer {token1}'},content_type='application/json')
     self.assertEqual(response.status_code, 201)
+
+    #Meenakshi cannot post in temple
+    response = client3.post(url,json.dumps({'title':'just a stranger', 'text':'nothing just a stranger'}),**{'HTTP_AUTHORIZATION': f'Bearer {token2}'},content_type='application/json')
+    self.assertEqual(response.status_code, 401)
+
+    retrieve_url = reverse("temple-post-detail", kwargs={'temple_pk': self.temple1.id, 'pk':1})
+    retrieve_url_event = reverse("event-post-detail", kwargs={'event_pk': self.event1.id, 'pk':2})
+
+    #testing get for the temple posts
+    response = client1.get(retrieve_url, **{'HTTP_AUTHORIZATION': f'Bearer {token1}'},content_type='application/json')
+    self.assertEqual(response.status_code, 200)
+
+    response = client2.get(retrieve_url, **{'HTTP_AUTHORIZATION': f'Bearer {token2}'},content_type='application/json')
+    self.assertEqual(response.status_code, 401)
+
+    response = client2.get(retrieve_url, **{'HTTP_AUTHORIZATION': f'Bearer {token3}'},content_type='application/json')
+    self.assertEqual(response.status_code, 401)
+
+    #testing get for the event posts
+    response = client1.get(retrieve_url_event, **{'HTTP_AUTHORIZATION': f'Bearer {token1}'},content_type='application/json')
+    self.assertEqual(response.status_code, 200)
+
+    response = client2.get(retrieve_url_event, **{'HTTP_AUTHORIZATION': f'Bearer {token2}'},content_type='application/json')
+    self.assertEqual(response.status_code, 200)
+
+    response = client2.get(retrieve_url_event, **{'HTTP_AUTHORIZATION': f'Bearer {token3}'},content_type='application/json')
+    self.assertEqual(response.status_code, 401)
+
+    list_url = reverse("temple-post-list", kwargs={"temple_pk": self.temple1.id})
+    list_url_event = reverse("event-post-list", kwargs={"event_pk":self.event1.id})
+
+
 

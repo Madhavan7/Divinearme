@@ -52,6 +52,11 @@ class event(models.Model):
         self.city = self.religious_establishment.city if self.city == '' else self.city
         self.country = self.religious_establishment.country if self.country == '' else self.country 
         return super(event, self).save(*args, **kwargs)
+    
+    def can_view(self, user_model):
+        if not self.private:
+            return True
+        return self.religious_establishment.can_view(user_model) or self.event_members.filter(id = user_model.id).exists()
 
     def add_request(self, user:UserModel):
         self.requests_to_join.add(user)
