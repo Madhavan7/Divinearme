@@ -113,5 +113,19 @@ class TestPostViewSet(TransactionTestCase):
     list_url = reverse("temple-post-list", kwargs={"temple_pk": self.temple1.id})
     list_url_event = reverse("event-post-list", kwargs={"event_pk":self.event1.id})
 
+    #Below two should fail since arya is neither part of the temple nor event
+    response = client3.get(list_url, **{'HTTP_AUTHORIZATION': f'Bearer {token3}'},content_type='application/json')
+    self.assertEqual(response.status_code, 401)
+    response = client3.get(list_url_event, **{'HTTP_AUTHORIZATION': f'Bearer {token3}'},content_type='application/json')
+    self.assertEqual(response.status_code, 401)
+
+    #below should pass
+    response = client1.get(list_url, **{'HTTP_AUTHORIZATION': f'Bearer {token1}'},content_type='application/json')
+    self.assertEqual(response.status_code, 200)
+    response = client1.get(list_url_event, **{'HTTP_AUTHORIZATION': f'Bearer {token1}'},content_type='application/json')
+    self.assertEqual(response.status_code, 200)
+    response = client2.get(list_url_event, **{'HTTP_AUTHORIZATION': f'Bearer {token2}'},content_type='application/json')
+    self.assertEqual(response.status_code, 200)
+    
 
 

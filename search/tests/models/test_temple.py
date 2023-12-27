@@ -19,6 +19,7 @@ class TempleTest(TransactionTestCase):
     return super(TempleTest, self).setUp()
   
   def test_temple_create(self):
+    #dangerous because of false positives in google address validation
     try:
       temple.objects.create(name="test3", temple_location = "wergasgwgrq")
       assert(5 == 3)

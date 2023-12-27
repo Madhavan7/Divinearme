@@ -12,7 +12,7 @@ class post(models.Model):
   title = models.CharField(max_length=200, default="new post")
   text = models.TextField()
   date_added = models.DateTimeField(auto_now_add=True)
-
+  
   def can_view(viewer: UserModel):
     raise NotImplementedError
 
