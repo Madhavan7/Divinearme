@@ -1,4 +1,3 @@
-from typing import Any
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from search.models.user_profile import UserModel
 from search.models.invitation import TempleInvitation, EventInvitation

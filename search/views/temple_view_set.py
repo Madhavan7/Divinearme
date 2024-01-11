@@ -94,8 +94,8 @@ class TempleViewSet(ModelViewSet):
             self.kwargs['user_pk'] = kwargs['user_pk']
             if request.user.id != int(self.kwargs['user_pk']):
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
-        elif 'user_pk' in self.kwargs:
-            self.kwargs.pop('user_pk')
+        #elif 'user_pk' in self.kwargs:
+            #self.kwargs.pop('user_pk')
         self.add_get_params(request, *args, **kwargs)
         return super().list(request, *args, **kwargs)
 

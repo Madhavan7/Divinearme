@@ -6,11 +6,9 @@ import search.permissions.temple_permissions as temple_perm
 import search.permissions.event_permissions as event_perm
 from search.exceptions.exceptions import InvalidUserException
 from search.serializers.invitation_serializer import *
-from search.serializers.temple_serializer import TempleSerializer
 from search.models.temple import temple
 from search.paginators import custom_pagination
 from search.serializers.member_serializer import MemberSerializer
-from search.serializers.event_serializer import EventSerializer
 from django.db import transaction
 
 class UserViewSet(ModelViewSet):
@@ -20,6 +18,7 @@ class UserViewSet(ModelViewSet):
     pagination_class = custom_pagination
     temple = None
     event = None
+        
     def set_args(self, request, *args, **kwargs):
         self.kwargs['join_request'] = request.GET.get('join_request', 0)
         if 'temple_pk' in kwargs:
@@ -75,7 +74,6 @@ class UserViewSet(ModelViewSet):
             return Response(response_dict)
         except InvalidUserException as i:
             return Response(data= {'message': str(i)},status=status.HTTP_401_UNAUTHORIZED)
-    
 
     def create(self, request, *args, **kwargs):
         try:

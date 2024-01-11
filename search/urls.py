@@ -4,6 +4,7 @@ from search.views.user_view_set import UserViewSet
 from search.views.event_view_set import EventViewSet
 from search.views.post_view_set import PostViewSet
 from search.views.invitation_view import InvitationView
+from search.views.get_id import get_id
 
 temple_list = TempleViewSet.as_view({
     'get':'list'
@@ -40,6 +41,7 @@ user_detail = UserViewSet.as_view({
     'put':'update',
     'get':'retrieve',
 })
+
 
 post_list = PostViewSet.as_view({
     'get':'list'
@@ -88,4 +90,5 @@ urlpatterns = [
                path('users/<str:user_pk>/temples/',temple_list, name = 'user-temple-list'),
                path('users/<str:user_pk>/invitations/', invitation_list, name='invitation-list'),
                path('users/<str:user_pk>/invitations/<str:pk>/', invitation_detail, name='invitation-detail'),
+               path('id/', get_id)
                ]

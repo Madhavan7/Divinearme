@@ -53,6 +53,6 @@ class TempleSearchStrategy(SearchStrategy):
 
   def search_user_temples(self,**search_params):
     if 'user_pk' in search_params:
-      self.queryset = UserModel.objects.get(id=search_params['user_pk']).temples.all()
+      self.queryset = UserModel.objects.get(user__id=search_params['user_pk']).temples.all()
     else:
       self.queryset = temple.objects.all()
