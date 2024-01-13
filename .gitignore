@@ -1,2 +1,4 @@
 /projEnv/
 /search/apikeys.py
+.env
+/frontend/node_modules/

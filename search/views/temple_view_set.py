@@ -1,19 +1,23 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from search.exceptions.exceptions import InvalidUserException
 from search.serializers.temple_serializer import TempleSerializer
 from search.models.temple import temple
 from search.models.user_profile import UserModel
 from search.models.event import event
+from search.views.view_builders.temple_search_strategy import TempleSearchStrategy
 from search.paginators import custom_pagination
 from search.permissions.temple_permissions import TempleUpdatePermission
 from typing import List
 import json as json
+from django.db import IntegrityError, transaction
 
 from search.views.view_builders.temple_view_builder import TempleViewDirector
 
 class TempleViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = TempleSerializer
     queryset = temple.objects.all()
     pagination_class = custom_pagination
@@ -51,28 +55,29 @@ class TempleViewSet(ModelViewSet):
                     continue
         return instance
     
-    def add_events(self, request, instance):
-        if "events" not in request.data:
+    def remove_events(self, request, instance):
+        if "remove_events" not in request.data:
             return instance
-        adder = UserModel.objects.get(user = request.user)
-        events = json.loads(request.data["events"])
+        remover = UserModel.objects.get(user=request.user)
+        events = json.loads(request.data["remove_events"])
         if not isinstance(events, List):
             return instance
-        for e in events:
-            if isinstance(e, dict) and "id" in e:
+        for even in events:
+            if isinstance(even, dict) and "id" in even:
                 try:
-                    even = event.objects.get(id = e["id"])
-                    instance.add_event(adder, even)
+                    even2 = event.objects.get(id=even["id"])
+                    instance.remove_event(remover, even2)
                 except event.DoesNotExist:
                     continue
         return instance
-
+    
+    def add_get_params(self, request, *args, **kwargs):
+        for param in request.GET:
+            self.kwargs[param] = request.GET.get(param, None)
 
     def get_queryset(self):
-        if 'user_pk' in self.kwargs:
-            #have to check permissions
-            return UserModel.objects.get(id=self.kwargs['user_pk']).temples.all()
-        return super().get_queryset()
+        #Need protections because not everybody can view user
+        return TempleSearchStrategy().search(self.kwargs)
     
     #overriding this, since temple serializer is not enough info for temple view
     def retrieve(self, request, *args, **kwargs):
@@ -87,17 +92,22 @@ class TempleViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         if 'user_pk' in kwargs:
             self.kwargs['user_pk'] = kwargs['user_pk']
-        elif 'user_pk' in self.kwargs:
-            self.kwargs.pop('user_pk')
+            id = UserModel.objects.get(user__id = request.user.id).id
+            if id != int(self.kwargs['user_pk']):
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+        #elif 'user_pk' in self.kwargs:
+            #self.kwargs.pop('user_pk')
+        self.add_get_params(request, *args, **kwargs)
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         #at the serializer level, the user created will be added as admin
         try:
             return super().create(request, *args, **kwargs)
-        except InvalidUserException():
-            #really dont need this, as the permissions are IsAuthenticatedOrReadOnly
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        except IntegrityError as i:
+            return Response(data= {'message': str(i)},status=status.HTTP_403_FORBIDDEN)
+        except InvalidUserException as i:
+            return Response(data= {'message': str(i)},status=status.HTTP_401_UNAUTHORIZED)
     
     def update(self, request, *args, **kwargs):
         #may need a helper function 
@@ -106,6 +116,8 @@ class TempleViewSet(ModelViewSet):
         try:
             partial = kwargs.pop('partial', True)
             instance = self.get_object()
+            if not TempleUpdatePermission().has_object_permission(request, None, instance):
+                return Response(status = status.HTTP_401_UNAUTHORIZED)
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
@@ -117,11 +129,11 @@ class TempleViewSet(ModelViewSet):
 
             #Dealing with adding member
             #now that I think about it its better if the check is done inside the function body
-            self.add_members(request, instance, "temple_members")
-            self.add_members(request, instance, "admins")
-            self.add_events(request, instance)
-            self.remove_members(request, instance)
-            instance.save()
+            with transaction.atomic():
+                self.add_members(request, instance, "temple_members")
+                self.add_members(request, instance, "admins")
+                self.remove_members(request, instance)
+                instance.save()
             return Response(serializer.data)
         except InvalidUserException:
             return Response(status = status.HTTP_401_UNAUTHORIZED)

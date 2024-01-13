@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from search.exceptions.exceptions import InvalidUserException
 from search.models.posts import post
 from search.serializers.post_serializer import *
@@ -16,13 +17,13 @@ from rest_framework.serializers import ValidationError
 import json as json
 
 class PostViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = PostSerializer
     queryset = post.objects.all()
     _post_owner = None
     
     def get_serializer_class(self):
         if isinstance(self._post_owner, temple):
-            print("temple")
             return TemplePostSerializer
         elif isinstance(self._post_owner, event):
             return EventPostSerializer
@@ -36,8 +37,6 @@ class PostViewSet(viewsets.ModelViewSet):
             temp = event.objects.get(id = self.kwargs['event_pk'])
             self._post_owner = temp
             #below is kind of restrictive becuse they can only comment if they can view the post
-            if not event_perm.EventPostCommentPermission().has_object_permission(request, None, temp):
-                raise InvalidUserException()
         elif 'event_pk' in self.kwargs:
             self.kwargs.pop('event_pk')
         
@@ -45,9 +44,6 @@ class PostViewSet(viewsets.ModelViewSet):
             self.kwargs['temple_pk'] = kwargs['temple_pk']
             temp = temple.objects.get(id = self.kwargs['temple_pk'])
             self._post_owner = temp
-            if not temple_perm.TemplePostCommentPermission().has_object_permission(request, None, temp):
-                print(request.user)
-                raise InvalidUserException()
         elif 'temple_pk' in self.kwargs:
             self.kwargs.pop('temple_pk')
         return None
@@ -82,7 +78,40 @@ class PostViewSet(viewsets.ModelViewSet):
             errors = val.detail
             return Response(errors, status=status.HTTP_401_UNAUTHORIZED)
     
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not post_perm.PostViewPermission().has_object_permission(request, None, instance):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+        
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+
+        if not post_perm.PostUpdateDeletePermission().has_object_permission(request, None, instance):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+    
     def list(self, request, *args, **kwargs):
+        self.set_args(request, *args, **kwargs)
+        if type(self._post_owner) == temple:
+            perm = TempleViewPermission().has_object_permission(request, None, self._post_owner)
+        else:
+            perm = EventViewPermission().has_object_permission(request, None, self._post_owner)
+        
+        if not perm:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         return super().list(request, *args, **kwargs)
     
     def destroy(self, request, *args, **kwargs):

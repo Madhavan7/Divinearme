@@ -1,4 +1,8 @@
 from rest_framework import serializers
+from django.forms import ValidationError
+import search.apikeys as apikeys
+import googlemaps as gmaps
+import googlemaps.addressvalidation as addval
 from search.exceptions.exceptions import InvalidUserException
 from search.models.temple import temple
 from django.contrib.auth.models import AnonymousUser
@@ -14,7 +18,6 @@ class TempleSerializer(serializers.ModelSerializer):
         if request and hasattr(request, "user") and not isinstance(request.user, AnonymousUser):
             temp = super().create(validated_data)
             u_model = UserModel.objects.get(user = request.user)
-            print(u_model)
             temp.temple_members.add(u_model)
             temp.admins.add(u_model)
             temp.save()
@@ -30,7 +33,19 @@ class TempleSerializer(serializers.ModelSerializer):
             else:
                 raise InvalidUserException()
         raise InvalidUserException()
+
+    def validate_temple_location(self, value):
+        client = gmaps.Client(key=apikeys.GOOGLE_PLACES_API_KEY)
+        response = addval.addressvalidation(client=client, addressLines=[value])
+        addressComplete = response['result']['verdict'].get('addressComplete', False)
+        if not addressComplete:
+            raise ValidationError("incomplete address", code="incomplete-address")
+        for component in response['result']['address']['addressComponents']:
+            if component['confirmationLevel'] != 'CONFIRMED':
+                raise ValidationError("incorrect component " + component['componentType'] + ": " + component['confirmationLevel'], code="incorrect-component")
+        return value
+
         
     class Meta:
         model = temple
-        fields = ['name', 'description', 'date_joined',]
+        fields = ['id','name', 'description', 'date_joined','temple_location']

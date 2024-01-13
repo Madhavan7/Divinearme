@@ -1,0 +1,6 @@
+.main {
+  height : 40px;
+  border : solid;
+  margin-bottom: 10px;
+  display: flex;
+}
