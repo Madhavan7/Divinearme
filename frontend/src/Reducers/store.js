@@ -1,13 +1,18 @@
-import {configureStore} from 'redux'
-import templeReducer from './templeReducer'
-import eventReducer from './eventReducer'
-import userReducer from './userReducer'
+import {configureStore, createSlice} from '@reduxjs/toolkit'
+import templeListReducer from './templeReducer'
+import { templeProfileSlice } from './templeReducer'
+import eventListReducer, { eventProfileSlice } from './eventReducer'
+import userListReducer, { userProfileSlice } from './userReducer'
 
 const store = configureStore({
   reducer: {
-    temples:templeReducer,
-    events:eventReducer,
-    users:userReducer,
+    templeList:templeListReducer,
+    eventList:eventListReducer,
+    userList:userListReducer,
+    templeProfile: templeProfileSlice.reducer,
+    eventProfile: eventProfileSlice.reducer,
+    userProfile: userProfileSlice.reducer,
   }
 })
 
+export default store

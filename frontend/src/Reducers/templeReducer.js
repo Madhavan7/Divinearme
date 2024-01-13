@@ -1,7 +1,7 @@
-import createSlice from 'react-redux'
+import { createSlice } from '@reduxjs/toolkit'
 import { getUserTemples } from '../Services/userService'
 
-const templeSlice = createSlice({name: 'temple',initialState:[], reducers:{
+const templeListSlice = createSlice({name: 'temples',initialState:[], reducers:{
   setTemples(state, action){
     return action.payload
   },
@@ -10,9 +10,21 @@ const templeSlice = createSlice({name: 'temple',initialState:[], reducers:{
   }
 }})
 
+const templeProfileSlice = createSlice({name:'temple', initialState:null, reducers:{
+  setTemple(state, action){
+    console.log('working')
+    console.log(action.payload)
+    return action.payload
+  }
+}})
+
 export const storeUserTemples = (id, pageNumber) =>{
-  getUserTemples(id, pageNumber).then(response => dispatch(setTemples(response))).catch(console.error)
+  return dispatch =>{
+    getUserTemples(id, pageNumber).then(r => r.results).then(response => {console.log(response);dispatch(setTemples(response))}).catch(console.error)
+  }
 }
 
-export const {setTemples, appendTemple} = templeSlice.actions
-export default templeSlice.reducer
+export const {setTemples, appendTemple} = templeListSlice.actions
+export const {setTemple} = templeProfileSlice.actions
+export {templeProfileSlice} 
+export default templeListSlice.reducer

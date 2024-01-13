@@ -11,6 +11,13 @@ export const getUserId = async () =>{
   return response.data
 }
 
+export const getUser = async (id) =>{
+  const authorizationToken = getAuthToken()
+  const response = await axios.get(`${baseUrl}/users/${id}/`, { headers: { Authorization: authorizationToken } })
+  console.log(response.data)
+  return response.data
+}
+
 export const getUserTemples = async (id, pageNumber) =>{
   const authorizationToken = getAuthToken()
   try {

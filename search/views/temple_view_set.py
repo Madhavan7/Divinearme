@@ -92,7 +92,8 @@ class TempleViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         if 'user_pk' in kwargs:
             self.kwargs['user_pk'] = kwargs['user_pk']
-            if request.user.id != int(self.kwargs['user_pk']):
+            id = UserModel.objects.get(user__id = request.user.id).id
+            if id != int(self.kwargs['user_pk']):
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         #elif 'user_pk' in self.kwargs:
             #self.kwargs.pop('user_pk')

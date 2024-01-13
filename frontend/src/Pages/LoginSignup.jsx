@@ -1,6 +1,8 @@
 import { useState } from "react"
 import {createAccount,login} from "../Services/loginSignupService"
 import { getUserId, getUserTemples } from "../Services/userService"
+import { Navigate, useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
 
 export const Signup = ({show}) => {
   if(!show){
@@ -33,6 +35,7 @@ export const Signup = ({show}) => {
 }
 
 export const Login = ({show}) => {
+  const navigate = useNavigate()
   if(!show){
     return null
   }
@@ -42,8 +45,8 @@ export const Login = ({show}) => {
     const username = e.target.username.value
     const password = e.target.password.value
     // await login(username, password)
-    const temples = await login(username, password).then(getUserId).then(r => r.id).then(id => getUserTemples(id, 0))
-    console.log(temples)
+    const id = await login(username, password).then(getUserId).then(r => r.id)
+    navigate(`users/${id}`)
   }
   return (
   <div>
@@ -57,7 +60,6 @@ export const Login = ({show}) => {
 }
 
 const LoginSignupPage = () =>{
-
   const [signup, setSignup] = useState(true)
 
   const toggleSignup = () =>{

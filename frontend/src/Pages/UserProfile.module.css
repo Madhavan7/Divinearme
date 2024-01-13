@@ -1,0 +1,10 @@
+.profile{
+  width: 300px;
+}
+
+.body{
+  display:"flex";
+  flex-grow:1;
+  border-color:black;
+  flex-direction: column;
+}

@@ -48,4 +48,4 @@ class TempleSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = temple
-        fields = ['name', 'description', 'date_joined','temple_location']
+        fields = ['id','name', 'description', 'date_joined','temple_location']

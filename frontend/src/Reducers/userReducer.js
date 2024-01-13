@@ -1,6 +1,7 @@
-import createSlice from 'react-redux'
+import { createSlice } from '@reduxjs/toolkit'
+import { getUser } from '../Services/userService'
 
-const userSlice = createSlice({name:'user', initialState:[], reducers:{
+const userListSlice = createSlice({name:'users', initialState:[], reducers:{
   setUsers(state, action){
     return action.payload
   },
@@ -9,5 +10,20 @@ const userSlice = createSlice({name:'user', initialState:[], reducers:{
   }
 }})
 
-export const {setUsers, appendUser} = userSlice.actions
-export default userSlice.reducer
+const userProfileSlice = createSlice({name:'user', initialState:null, reducers:{
+  setUser(state, action){
+    return action.payload
+  }
+}})
+
+const getUserProfile = (id) =>{
+  return dispatch =>{
+    getUser(id).then(r => {console.log(r);dispatch(setUser(r))}).catch(console.error)
+  } 
+}
+
+export const {setUsers, appendUser} = userListSlice.actions
+export const {setUser} = userProfileSlice.actions
+export {userProfileSlice}
+export {getUserProfile}
+export default userListSlice.reducer

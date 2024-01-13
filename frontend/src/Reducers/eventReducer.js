@@ -1,6 +1,6 @@
-import createSlice from 'react-redux'
+import { createSlice } from '@reduxjs/toolkit'
 
-const eventSlice = createSlice({name:'event', initialState:[], reducers:{
+const eventListSlice = createSlice({name:'events', initialState:[], reducers:{
   setEvents(state, action){
     return action.payload
   },
@@ -9,5 +9,13 @@ const eventSlice = createSlice({name:'event', initialState:[], reducers:{
   }
 }})
 
-export const {setEvents, appendEvent} = eventSlice.actions
-export default eventSlice.reducer
+const eventProfileSlice = createSlice({name:'event', initialState:null, reducers:{
+  setEvent(state, action){
+    return action.payload
+  }
+}})
+
+export const {setEvents, appendEvent} = eventListSlice.actions
+export {eventProfileSlice} 
+export const {setEvent} = eventProfileSlice.actions
+export default eventListSlice.reducer

@@ -6,4 +6,4 @@ class EventSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     class Meta:
         model = event
-        fields = ['name', 'religious_establishment', 'description', 'start_date_time', 'end_date_time', 'date_joined', 'event_location']
+        fields = ['id','name', 'religious_establishment', 'description', 'start_date_time', 'end_date_time', 'date_joined', 'event_location']
